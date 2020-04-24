@@ -1,0 +1,56 @@
+.todo-indicator-text {
+	margin-left: 5px;
+}
+
+.todo-main-box {
+	width: 330px;
+	height: auto;
+	max-height: 325px;
+}
+
+.todo-top-box {
+	padding: 0 25px;
+	margin-bottom: 15px;
+}
+
+.todo-entry {
+	padding: 10px 15px;
+	color: gray;
+}
+
+.todo-todos-box {
+	border-top: 1px solid #A9A9A9;
+}
+
+.todo-tabs-box {
+	padding: 0 25px;
+	margin-bottom: 15px;
+}
+
+.todo-tab-button {
+	padding: 5px 10px;
+}
+
+.todo-tab-button--active {
+	font-weight: bold;
+}
+
+.todo-task-item {
+	padding: 12px 25px;
+	vertical-align: middle;
+}
+
+.todo-check-button {
+	padding-right: 15px;
+}
+
+.todo-delete-button,
+.todo-archive-button,
+.todo-restore-button {
+	padding-left: 5px;
+}
+
+.todo-tasktext--done {
+	color: gray;
+	text-decoration: line-through;
+}

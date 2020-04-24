@@ -1,0 +1,14 @@
+{
+  "uuid": "2do@v-a-l-i-k-o.github.io",
+  "name": "-=2Do=-",
+  "description": "A simple TODO extension.",
+  "gettext-domain": "2do",
+  "settings-schema": "org.gnome.shell.extensions.2do",
+  "version": 1,
+  "shell-version": [
+    "3.32",
+    "3.33",
+    "3.34"
+  ],
+  "url": ""
+}

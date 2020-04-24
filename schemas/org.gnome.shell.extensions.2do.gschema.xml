@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schemalist gettext-domain="2do">
+	<schema path="/org/gnome/shell/extensions/2do/" id="org.gnome.shell.extensions.2do" >
+		<key type="as" name="open-todolist">
+			<default><![CDATA[['<Control><Alt>space']]]></default>
+			<summary>The key you want to open todolist.</summary>
+		</key>
+	</schema>
+</schemalist>

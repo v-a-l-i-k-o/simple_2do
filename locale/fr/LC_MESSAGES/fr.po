@@ -1,0 +1,11 @@
+#: extension.js:40 73 106
+msgid "(...)"
+msgstr "(···)"
+
+#: extension.js:95
+msgid "New task..."
+msgstr "Nouvelle tâche…"
+
+#: prefs.js:31
+msgid "Open todolist"
+msgstr "Ouvrir la todolist"
