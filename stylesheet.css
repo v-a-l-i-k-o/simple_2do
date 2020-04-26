@@ -3,14 +3,13 @@
 }
 
 .todo-main-box {
-	width: 330px;
+	width: 360px;
 	height: auto;
-	max-height: 325px;
+	max-height: 390px;
 }
 
 .todo-top-box {
 	padding: 0 25px;
-	margin-bottom: 15px;
 }
 
 .todo-entry {
@@ -18,39 +17,67 @@
 	color: gray;
 }
 
-.todo-todos-box {
-	border-top: 1px solid #A9A9A9;
-}
-
 .todo-tabs-box {
-	padding: 0 25px;
-	margin-bottom: 15px;
+	padding: 15px 25px;
 }
 
 .todo-tab-button {
 	padding: 5px 10px;
+	border-bottom: 2px;
 }
 
 .todo-tab-button--active {
 	font-weight: bold;
+	border-color: rgba(255, 143, 0, 0.5);
 }
 
 .todo-task-item {
-	padding: 12px 25px;
-	vertical-align: middle;
+	padding: 12px 19px 12px 25px;
 }
 
 .todo-check-button {
-	padding-right: 15px;
+	padding: 6px 7px 6px 0;
 }
 
 .todo-delete-button,
 .todo-archive-button,
 .todo-restore-button {
-	padding-left: 5px;
+	margin-left: 5px;
+	padding: 6px;
+	border-radius: 14px;
+}
+
+.todo-delete-button:hover {
+	background-color: rgba(198, 40, 40, 0.5);
+}
+
+.todo-archive-button:hover {
+	background-color: rgba(255, 143, 0, 0.5);
+}
+
+.todo-restore-button:hover {
+	background-color: rgba(46, 125, 50, 0.5);
+}
+
+.todo-tasktext {
+	padding: 7px;
+	vertical-align: middle;
+	border-left-width: 2px;
+}
+
+.todo-tasktext:hover {
+	border-color: rgba(46, 125, 50, 0.5);
+}
+
+.todo-tasktext--editing {
+	border-color: rgba(255, 143, 0, 0.5);
+	background-color: rgba(255, 143, 0, 0.2);
+}
+
+.todo-tasktext--editing:hover {
+	border-color: rgba(255, 143, 0, 0.5);
 }
 
 .todo-tasktext--done {
-	color: gray;
 	text-decoration: line-through;
 }

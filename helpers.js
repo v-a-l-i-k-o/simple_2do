@@ -1,4 +1,5 @@
 function stringFromUTF8Array(data) {
+    log('TODO: Get string from UTF8Array');
     const extraByteMap = [1, 1, 1, 1, 2, 2, 3, 0];
     const count = data.length;
     let str = "";
@@ -22,7 +23,6 @@ function stringFromUTF8Array(data) {
 
         str += String.fromCharCode(ch);
     }
-    log('TODO: Get string from UTF8Array');
 
     return str;
 }
