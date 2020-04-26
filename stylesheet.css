@@ -2,14 +2,22 @@
 	margin-left: 5px;
 }
 
-.todo-main-box {
+.todo-popup-menu {
 	width: 360px;
+	padding: 0 10px 0 0;
+}
+
+.todo-popup-menu:focus {
+	background-color: inherit;
+}
+
+.todo-main-box {
 	height: auto;
 	max-height: 390px;
 }
 
 .todo-top-box {
-	padding: 0 25px;
+	padding-right: 18px;
 }
 
 .todo-entry {
@@ -18,7 +26,11 @@
 }
 
 .todo-tabs-box {
-	padding: 15px 25px;
+	padding: 15px 18px 15px 0;
+}
+
+.todo-todos-box {
+	padding-right: 18px;
 }
 
 .todo-tab-button {
@@ -32,7 +44,7 @@
 }
 
 .todo-task-item {
-	padding: 12px 19px 12px 25px;
+	padding: 12px 0;
 }
 
 .todo-check-button {

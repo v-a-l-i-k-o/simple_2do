@@ -1,6 +1,7 @@
 const { St, GLib, Gio, Shell, GObject, Clutter } = imports.gi;
 const {
 	panelMenu: PanelMenu,
+	popupMenu: PopupMenu,
 	main: Main
 } = imports.ui;
 
@@ -35,6 +36,12 @@ class TodoButton extends PanelMenu.Button {
 
 		this.start();
 		this._getTodoFileList();
+
+		if (Main.panel._menus === undefined)
+            Main.panel.menuManager.addMenu(this.menu);
+        else
+            Main.panel._menus.addMenu(this.menu);
+
 		this._buildUI();
 		this.onRefresh();
 	}
@@ -63,11 +70,7 @@ class TodoButton extends PanelMenu.Button {
 		this._activeTasksCount = this._getActiveTasksCount();
 		this._notArchivedTasksCount = this._getAvailableTasksCount();
 
-		this.panelIndicator = new St.BoxLayout({
-			vertical: false,
-			y_align: Clutter.ActorAlign.CENTER,
-			style: 'font-size: 12px;'
-		});
+		let panelIndicator = new St.BoxLayout();
 
         let indicatorIcon = new St.Icon({
             gicon: new Gio.ThemedIcon({
@@ -77,26 +80,22 @@ class TodoButton extends PanelMenu.Button {
 			style_class: 'todo-indicator-icon'
         });
 
-		this.indicatorText = new St.Label({
-			text:`( ${todoFileList.length} )`,
+		this._indicatorText = new St.Label({
+			text: '',
+			y_align: Clutter.ActorAlign.CENTER,
+			style: 'font-size: 12px;',
 			style_class: 'todo-indicator-text'
 		});
 
-		this.panelIndicator.add_child(indicatorIcon);
-		this.panelIndicator.add_child(this.indicatorText);
-
-		this.add_child(this.panelIndicator);
+		panelIndicator.add_child(indicatorIcon);
+		panelIndicator.add_child(this._indicatorText);
+		this.add_child(panelIndicator);
 
 		this.mainBox = new St.BoxLayout({
 			vertical: true,
-			can_focus: true,
-			reactive: true,
+			x_expand: true,
 			style_class: 'todo-main-box',
 			style: 'font-size: 16px;'
-		});
-
-		this.mainBox.connect('button-press-event', (actor) => {
-			actor.grab_key_focus();
 		});
 
 		this.topBox = new St.BoxLayout({
@@ -122,7 +121,6 @@ class TodoButton extends PanelMenu.Button {
 			) {
 				this._addTask(actor.get_text());
 				this.clutterTaskEntry.set_text('');
-				this.taskEntry.set_hint_text(_("Things needs to be done..."));
 			}
 		});
 
@@ -163,7 +161,7 @@ class TodoButton extends PanelMenu.Button {
 		this.scrollView = new St.ScrollView({
 			style_class: 'todo-scroll-view',
 			x_fill:true,
-            y_fill: false,
+            y_fill: true,
 			reactive: true,
             y_align: St.Align.START,
             x_align: St.Align.START,
@@ -181,7 +179,19 @@ class TodoButton extends PanelMenu.Button {
 		this.mainBox.add_child(this.tabsBox);
 		this.mainBox.add_child(this.scrollView);
 
-		this.menu.box.add_child(this.mainBox);
+        let box = new PopupMenu.PopupBaseMenuItem({
+			reactive: true,
+            activate: false,
+            hover: false,
+            style_class: 'todo-popup-menu'
+		});
+
+        box.add_child(this.mainBox);
+		box.connect('button-press-event', (actor) => {
+			actor.grab_key_focus();
+		});
+
+        this.menu.addMenuItem(box);
 		this.menu.connect('open-state-changed', this._handleMenuState.bind(this));
 	}
 
@@ -225,6 +235,7 @@ class TodoButton extends PanelMenu.Button {
 
 		todoFileList.push(newTask);
 		this._handleTabState(this.tabActiveButton, false);
+		this.taskEntry.grab_key_focus();
 		ControllerInstance.syncTodoData(todoFileList);
 	}
 
@@ -256,153 +267,151 @@ class TodoButton extends PanelMenu.Button {
 	onRefresh(file, otherFile, eventType) {
 		const { DELETED, CREATED, CHANGES_DONE_HINT } = Gio.FileMonitorEvent;
 
-		if (!todoFileList.length) {
-			this.tabsBox.hide();
-		} else {
-			this.tabsBox.show();
-		}
-
 		if (eventType === undefined || eventType === CHANGES_DONE_HINT) {
-			log('TODO: Refresh UI. Add listeners...');
+			log('TODO: Remove the listeners. Refresh UI');
 			this.todosBox.destroy_all_children(); // destroy all children and disconnect their listeners
-			this._activeTasksCount = this._getActiveTasksCount();
-			this._notArchivedTasksCount = this._getAvailableTasksCount();
+			this._indicatorText.hide();
+			this.tabsBox.hide();
 
-			if (this._notArchivedTasksCount) {
-				this.indicatorText.show();
-			} else {
-				this.indicatorText.hide();
-			}
+			if (todoFileList.length) {
+				log('TODO: Add the listeners...');
+				this.tabsBox.show();
+				this._activeTasksCount = this._getActiveTasksCount();
+				this._notArchivedTasksCount = this._getAvailableTasksCount();
 
-			todoFileList
-				.filter((item) => this.trashMode === item.isArchived)
-				.forEach((item, i) => {
-				let taskItem = new St.BoxLayout({
-					reactive: true,
-					style_class: 'todo-task-item'
-				});
-
-				let taskText = new St.Label({
-					text:_(`${item.title}`),
-					x_expand: true,
-					reactive: true,
-					track_hover: true,
-					y_align: Clutter.ActorAlign.CENTER,
-					opacity: item.isDone ? 130 : 255,
-					style_class: `todo-tasktext ${item.isDone ? 'todo-tasktext--done' : ''}`,
-					style: 'font-size: 15px;'
-				});
-
-				taskText.clutter_text.set_reactive(true);
-				taskText.clutter_text.set_activatable(true);
-				taskText.clutter_text.set_selectable(false);
-
-				taskText.clutter_text.connect('enter-event', (actor) => {
-					if (!actor.editable) {
-						actor.set_line_wrap(true);
-					}
-				});
-				taskText.clutter_text.connect('leave-event', (actor) => {
-					if (!actor.editable) {
-						actor.set_line_wrap(false);
-					}
-				});
-
-				taskText.clutter_text.connect('activate', (actor) => {
-					let text = actor.get_text().trim();
-					if (!text) return;
-
-					log('TODO: Update task');
-					item.title = text;
-					ControllerInstance.syncTodoData(todoFileList);
-				});
-
-				taskText.clutter_text.connect('button-press-event', (actor) => {
-					if (item.isDone || item.isArchived) return;
-					if (item.editable) return;
-					taskText.add_style_class_name('todo-tasktext--editing');
-					actor.set_editable(true);
-					actor.set_line_wrap(false);
-				});
-
-				taskText.clutter_text.connect('key-focus-out', (actor) => {
-					taskText.remove_style_class_name('todo-tasktext--editing');
-					actor.set_editable(false);
-					actor.set_line_wrap(false);
-					actor.set_text(item.title);
-				});
-
-				this.checkButton = new St.Icon({
-					reactive: true,
-					y_align: Clutter.ActorAlign.START,
-		            gicon: new Gio.ThemedIcon({
-						name: `${item.isArchived ? 'action-unavailable-symbolic'
-							: item.isDone ? 'checkbox-checked-symbolic'
-							: 'checkbox-symbolic'}`
-					}),
-					icon_size: 20,
-					style_class: 'todo-check-button'
-		        });
-
-				this.deleteButton = new St.Icon({
-					reactive: true,
-					y_align: Clutter.ActorAlign.START,
-		            gicon: new Gio.ThemedIcon({
-						name: 'edit-clear-all-symbolic'
-					}),
-					icon_size: 16,
-					track_hover: true,
-					style_class: 'todo-delete-button'
-		        });
-
-				this.archiveButton = new St.Icon({
-					reactive: true,
-					y_align: Clutter.ActorAlign.START,
-		            gicon: new Gio.ThemedIcon({
-						name: 'user-trash-symbolic'
-					}),
-					icon_size: 16,
-					track_hover: true,
-					style_class: 'todo-archive-button'
-		        });
-
-				this.restoreButton = new St.Icon({
-					reactive: true,
-					y_align: Clutter.ActorAlign.START,
-		            gicon: new Gio.ThemedIcon({
-						name: 'edit-undo-symbolic'
-					}),
-					icon_size: 16,
-					visible: false,
-					track_hover: true,
-					style_class: 'todo-restore-button'
-		        });
-
-				this.checkButton.connect('button-release-event', () => this._toggleTaskState(item));
-
-				taskItem.add_child(this.checkButton);
-				taskItem.add_child(taskText);
-
-				if (this.trashMode) {
-					this.restoreButton.connect('button-release-event', () => this._restoreTask(item));
-					this.deleteButton.connect('button-release-event', () => this._removeTask(item));
-					taskItem.add_child(this.restoreButton);
-					taskItem.add_child(this.deleteButton);
-					taskItem.connect('enter-event', (actor) => actor.get_child_at_index(2).show());
-					taskItem.connect('leave-event', (actor) => actor.get_child_at_index(2).hide());
-				} else {
-					this.archiveButton.connect('button-release-event', () => this._archiveTask(item));
-					taskItem.add_child(this.archiveButton);
+				if (this._notArchivedTasksCount) {
+					this._indicatorText.show();
 				}
 
-				this.todosBox.add_child(taskItem);
-			});
+				todoFileList
+					.filter((item) => this.trashMode === item.isArchived)
+					.forEach((item, i) => {
+					let taskItem = new St.BoxLayout({
+						reactive: true,
+						style_class: 'todo-task-item'
+					});
 
-			this.indicatorText.set_text(this._activeTasksCount
-				? `( ${this._activeTasksCount} / ${this._notArchivedTasksCount} )`
-				: 'All done');
+					let taskText = new St.Label({
+						text: item.title,
+						x_expand: true,
+						reactive: true,
+						track_hover: true,
+						y_align: Clutter.ActorAlign.CENTER,
+						opacity: item.isDone ? 130 : 255,
+						style_class: `todo-tasktext ${item.isDone ? 'todo-tasktext--done' : ''}`,
+						style: 'font-size: 15px;'
+					});
 
-			this.taskEntry.hint_text = _("Things needs to be done...");
+					taskText.clutter_text.set_reactive(true);
+					taskText.clutter_text.set_activatable(true);
+					taskText.clutter_text.set_selectable(false);
+
+					taskText.clutter_text.connect('enter-event', (actor) => {
+						if (!actor.editable) {
+							actor.set_line_wrap(true);
+						}
+					});
+					taskText.clutter_text.connect('leave-event', (actor) => {
+						if (!actor.editable) {
+							actor.set_line_wrap(false);
+						}
+					});
+
+					taskText.clutter_text.connect('activate', (actor) => {
+						let text = actor.get_text().trim();
+						if (!text) return;
+
+						log('TODO: Update task');
+						item.title = text;
+						ControllerInstance.syncTodoData(todoFileList);
+					});
+
+					taskText.clutter_text.connect('button-press-event', (actor) => {
+						if (item.isDone || item.isArchived) return;
+						if (item.editable) return;
+						taskText.add_style_class_name('todo-tasktext--editing');
+						actor.set_editable(true);
+						actor.set_line_wrap(false);
+					});
+
+					taskText.clutter_text.connect('key-focus-out', (actor) => {
+						taskText.remove_style_class_name('todo-tasktext--editing');
+						actor.set_editable(false);
+						actor.set_line_wrap(false);
+						actor.set_text(item.title);
+					});
+
+					this.checkButton = new St.Icon({
+						reactive: true,
+						y_align: Clutter.ActorAlign.START,
+			            gicon: new Gio.ThemedIcon({
+							name: `${item.isArchived ? 'action-unavailable-symbolic'
+								: item.isDone ? 'checkbox-checked-symbolic'
+								: 'checkbox-symbolic'}`
+						}),
+						icon_size: 20,
+						style_class: 'todo-check-button'
+			        });
+
+					this.deleteButton = new St.Icon({
+						reactive: true,
+						y_align: Clutter.ActorAlign.START,
+			            gicon: new Gio.ThemedIcon({
+							name: 'edit-clear-all-symbolic'
+						}),
+						icon_size: 16,
+						track_hover: true,
+						style_class: 'todo-delete-button'
+			        });
+
+					this.archiveButton = new St.Icon({
+						reactive: true,
+						y_align: Clutter.ActorAlign.START,
+			            gicon: new Gio.ThemedIcon({
+							name: 'user-trash-symbolic'
+						}),
+						icon_size: 16,
+						track_hover: true,
+						style_class: 'todo-archive-button'
+			        });
+
+					this.restoreButton = new St.Icon({
+						reactive: true,
+						y_align: Clutter.ActorAlign.START,
+			            gicon: new Gio.ThemedIcon({
+							name: 'edit-undo-symbolic'
+						}),
+						icon_size: 16,
+						visible: false,
+						track_hover: true,
+						style_class: 'todo-restore-button'
+			        });
+
+					this.checkButton.connect('button-release-event', () => this._toggleTaskState(item));
+
+					taskItem.add_child(this.checkButton);
+					taskItem.add_child(taskText);
+
+					if (this.trashMode) {
+						this.restoreButton.connect('button-release-event', () => this._restoreTask(item));
+						this.deleteButton.connect('button-release-event', () => this._removeTask(item));
+						taskItem.add_child(this.restoreButton);
+						taskItem.add_child(this.deleteButton);
+						taskItem.connect('enter-event', (actor) => actor.get_child_at_index(2).show());
+						taskItem.connect('leave-event', (actor) => actor.get_child_at_index(2).hide());
+					} else {
+						this.archiveButton.connect('button-release-event', () => this._archiveTask(item));
+						taskItem.add_child(this.archiveButton);
+					}
+
+					this.todosBox.add_child(taskItem);
+				});
+
+				this._indicatorText.set_text(this._activeTasksCount
+					? `( ${this._activeTasksCount} / ${this._notArchivedTasksCount} )`
+					: 'All done'
+				);
+			}
 		}
 	}
 
@@ -437,5 +446,3 @@ function disable() {
 	todoApp.destroy();
 	todoApp = null;
 }
-
-//----------------------------------------------------------------------
