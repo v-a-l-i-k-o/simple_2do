@@ -120,7 +120,9 @@ class TodoButton extends PanelMenu.Button {
 				symbol == Constants.KEY_ENTER
 			) {
 				this._addTask(actor.get_text());
-				this.clutterTaskEntry.set_text('');
+				actor.set_text('');
+				this.taskEntry.set_hint_text(_("Things needs to be done..."));
+				this._handleTabState(this.tabActiveButton, false);
 			}
 		});
 
@@ -158,15 +160,21 @@ class TodoButton extends PanelMenu.Button {
 		this.tabsBox.add_child(this.tabActiveButton);
 		this.tabsBox.add_child(this.tabArchiveButton);
 
+		this.todosScrollBox = new St.BoxLayout({
+			style_class: 'todo-todos-scroll-box',
+			vertical: true,
+			x_expand: true,
+			y_expand: true
+		});
+
 		this.scrollView = new St.ScrollView({
 			style_class: 'todo-scroll-view',
 			x_fill:true,
-            y_fill: true,
-			reactive: true,
+			y_fill: true,
             y_align: St.Align.START,
-            x_align: St.Align.START,
             overlay_scrollbars: true
 		});
+		this.scrollView.set_clip_to_allocation(true);
 
 		this.todosBox = new St.BoxLayout({
 			style_class: 'todo-todos-box',
@@ -174,37 +182,50 @@ class TodoButton extends PanelMenu.Button {
 		});
 
 		this.scrollView.add_actor(this.todosBox);
+		this.todosScrollBox.add_child(this.scrollView);
 
 		this.mainBox.add_child(this.topBox);
 		this.mainBox.add_child(this.tabsBox);
-		this.mainBox.add_child(this.scrollView);
+		this.mainBox.add_child(this.todosScrollBox);
 
-        let box = new PopupMenu.PopupBaseMenuItem({
+        this._menuItem = new PopupMenu.PopupBaseMenuItem({
 			reactive: true,
             activate: false,
             hover: false,
             style_class: 'todo-popup-menu'
 		});
 
-        box.add_child(this.mainBox);
-		box.connect('button-press-event', (actor) => {
+        this._menuItem.add_child(this.mainBox);
+		this._menuItem.connect('button-press-event', (actor) => {
 			actor.grab_key_focus();
 		});
 
-        this.menu.addMenuItem(box);
+        this.menu.addMenuItem(this._menuItem);
 		this.menu.connect('open-state-changed', this._handleMenuState.bind(this));
+		this.menu.connect('key-press-event', this._onMenuKeyPress.bind(this));
+	}
+
+	_onMenuKeyPress(actor, event) {
+        let key = event.get_key_unicode();
+
+		if (key.length != 0) {
+			if (this.menu.isOpen) {
+				this.clutterTaskEntry.grab_key_focus();
+				let newText = this.clutterTaskEntry.get_text() + key;
+				this.clutterTaskEntry.set_text(newText);
+			}
+		}
 	}
 
 	_handleMenuState() {
 		if (this.menu.isOpen) {
 			let currentActiveTab = this._getAvailableTasksCount() ? this.tabActiveButton : this.tabArchiveButton;
-
 			this._handleTabState(currentActiveTab);
 		}
 	}
 
 	_handleTabState(actor, shouldRefresh = true) {
-		actor.grab_key_focus();
+		this._menuItem.grab_key_focus();
 		if (!actor.has_style_class_name('todo-tab-button--active')) {
 			let siblings = actor.get_parent().get_children();
 			siblings.forEach((item, i) => {
@@ -216,7 +237,7 @@ class TodoButton extends PanelMenu.Button {
 			this.trashMode = actor.get_name() === 'tabArchiveButton';
 
 			if (shouldRefresh) this.onRefresh();
-		}
+		};
 	}
 
 	_addTask(title) {
@@ -234,8 +255,6 @@ class TodoButton extends PanelMenu.Button {
 		}
 
 		todoFileList.push(newTask);
-		this._handleTabState(this.tabActiveButton, false);
-		this.taskEntry.grab_key_focus();
 		ControllerInstance.syncTodoData(todoFileList);
 	}
 
@@ -326,9 +345,9 @@ class TodoButton extends PanelMenu.Button {
 						ControllerInstance.syncTodoData(todoFileList);
 					});
 
-					taskText.clutter_text.connect('button-press-event', (actor) => {
-						if (item.isDone || item.isArchived) return;
-						if (item.editable) return;
+					taskText.clutter_text.connect('button-press-event', (actor, e) => {
+						if (e.get_click_count() !== 2) return;
+						if (item.isDone || item.isArchived || item.editable) return;
 						taskText.add_style_class_name('todo-tasktext--editing');
 						actor.set_editable(true);
 						actor.set_line_wrap(false);

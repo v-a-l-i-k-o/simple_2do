@@ -17,7 +17,7 @@
 }
 
 .todo-top-box {
-	padding-right: 18px;
+	padding-right: 20px;
 }
 
 .todo-entry {
@@ -26,11 +26,11 @@
 }
 
 .todo-tabs-box {
-	padding: 15px 18px 15px 0;
+	padding: 15px 20px 15px 0;
 }
 
 .todo-todos-box {
-	padding-right: 18px;
+	padding-right: 20px;
 }
 
 .todo-tab-button {
@@ -40,7 +40,7 @@
 
 .todo-tab-button--active {
 	font-weight: bold;
-	border-color: rgba(255, 143, 0, 0.5);
+	border-color: rgba(255, 143, 0, 1);
 }
 
 .todo-task-item {
@@ -78,16 +78,16 @@
 }
 
 .todo-tasktext:hover {
-	border-color: rgba(46, 125, 50, 0.5);
+	border-color: rgba(46, 125, 50, 1);
 }
 
 .todo-tasktext--editing {
-	border-color: rgba(255, 143, 0, 0.5);
+	border-color: rgba(255, 143, 0, 1);
 	background-color: rgba(255, 143, 0, 0.2);
 }
 
 .todo-tasktext--editing:hover {
-	border-color: rgba(255, 143, 0, 0.5);
+	border-color: rgba(255, 143, 0, 1);
 }
 
 .todo-tasktext--done {
