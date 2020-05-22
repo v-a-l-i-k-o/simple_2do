@@ -11,13 +11,8 @@
 	background-color: inherit;
 }
 
-.todo-main-box {
-	height: auto;
-	max-height: 390px;
-}
-
 .todo-top-box {
-	padding-right: 20px;
+	padding-right: 16px;
 }
 
 .todo-entry {
@@ -26,11 +21,11 @@
 }
 
 .todo-tabs-box {
-	padding: 15px 20px 15px 0;
+	padding: 15px 16px 15px 0;
 }
 
 .todo-todos-box {
-	padding-right: 20px;
+	padding-right: 16px;
 }
 
 .todo-tab-button {
@@ -51,23 +46,21 @@
 	padding: 6px 7px 6px 0;
 }
 
-.todo-delete-button,
-.todo-archive-button,
-.todo-restore-button {
+.todo-action-button {
 	margin-left: 5px;
 	padding: 6px;
 	border-radius: 14px;
 }
 
-.todo-delete-button:hover {
+.todo-action-button--delete:hover {
 	background-color: rgba(198, 40, 40, 0.5);
 }
 
-.todo-archive-button:hover {
+.todo-action-button--archive:hover {
 	background-color: rgba(255, 143, 0, 0.5);
 }
 
-.todo-restore-button:hover {
+.todo-action-button--restore:hover {
 	background-color: rgba(46, 125, 50, 0.5);
 }
 

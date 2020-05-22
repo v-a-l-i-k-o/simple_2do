@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <schemalist gettext-domain="2do">
 	<schema path="/org/gnome/shell/extensions/2do/" id="org.gnome.shell.extensions.2do" >
-		<key type="as" name="open-todolist">
-			<default><![CDATA[['<Control><Alt>space']]]></default>
-			<summary>The key you want to open todolist.</summary>
-		</key>
+		<key type="i" name="todo-font-size">
+	      <default>15</default>
+	      <summary>ToDo font size</summary>
+	      <description>ToDo font size.</description>
+	    </key>
+		<key type="i" name="todo-tasks-amount">
+	      <default>5</default>
+	      <summary>Max amount of tasks, which display without scrolling</summary>
+	      <description>Max amount of tasks, which display without scrolling.</description>
+	    </key>
 	</schema>
 </schemalist>
